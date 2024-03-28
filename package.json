@@ -1,0 +1,35 @@
+{
+  "name": "stategy-contracts",
+  "version": "1.0.0",
+  "description": "Olive chain strategy contracts",
+  "author": "m7@oliveapp.finance",
+  "license": "BUSL-2.0",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.5",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@openzeppelin/contracts-upgradeable": "^5.0.2",
+    "@openzeppelin/hardhat-upgrades": "^3.0.4",
+    "@types/chai": "^4.3.12",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.25",
+    "chai": "^4.4.1",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.11.1",
+    "hardhat": "^2.21.0",
+    "hardhat-contract-sizer": "^2.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2"
+  },
+  "scripts": {
+    "local": "./node_modules/.bin/hardhat --config hardhat.config.ts node",
+    "test": "./node_modules/.bin/hardhat --config hardhat.config.ts test",
+    "compile": "./node_modules/.bin/hardhat --config hardhat.config.ts compile",
+    "clean": "./node_modules/.bin/hardhat --config hardhat.config.ts clean",
+    "console": "./node_modules/.bin/hardhat console --network localhost",
+    "c": "./node_modules/.bin/hardhat --config hardhat.config.ts coverage --solcoverjs .solcover.js",
+    "cc": "yarn clean && yarn compile",
+    "all": "yarn cc && yarn c"
+  }
+}
