@@ -110,7 +110,7 @@ contract Strategy is IStrategy, ReentrancyGuardUpgradeable {
 
     function _withdraw(address _user, uint256 _amount) internal {
         require(_amount > 0, "!balance");
-        balances[_user] = 0;
+        balances[_user] -= _amount;
         IERC20(token).safeTransfer(_user, _amount);
         emit Withdraw(_user, _amount);
     }
