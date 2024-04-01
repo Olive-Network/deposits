@@ -82,6 +82,7 @@ contract StrategyETH is IStrategyETH, ReentrancyGuardUpgradeable {
         uint256 _amount = msg.value;
         require(_amount > 0, "!amount");
         require(_account != address(0), "!address");
+        require(!IBlackList(administrator).isBlackListed(_account), "blacklisted");
         balances[_account] += _amount;
         emit Deposit(_account, _amount);
     }

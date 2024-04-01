@@ -9,6 +9,7 @@ import { IRole }  from "../administrator/IRole.sol";
 import { IPausable }  from "../administrator/IPausable.sol";
 import { IBlackList }  from "../administrator/IBlackList.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Strategy is IStrategy, ReentrancyGuardUpgradeable {
     /** Don't change the order of variables, always append */
@@ -18,6 +19,8 @@ contract Strategy is IStrategy, ReentrancyGuardUpgradeable {
     address public administrator;
     address public token;
     mapping(address => uint256) balances;
+
+    using SafeERC20 for IERC20;
 
     function init(
         address _administrator,
@@ -75,40 +78,47 @@ contract Strategy is IStrategy, ReentrancyGuardUpgradeable {
     }
 
     function deposit(uint256 _amount) external override onlyAllowed nonReentrant notPaused {
-        require(_amount > 0, "!amount");
-        IERC20(token).transferFrom(msg.sender, address(this), _amount);
-        balances[msg.sender] += _amount;
-        emit Deposit(msg.sender, _amount);
+        _deposit(msg.sender, msg.sender, _amount);
     }
 
     function depositFor(address _account, uint256 _amount) external override onlyAllowed nonReentrant notPaused {
+        require(!IBlackList(administrator).isBlackListed(_account), "blacklisted");
+        _deposit(msg.sender, _account, _amount);
+    }
+
+    function _deposit (address _from, address _user, uint256 _amount) internal {
         require(_amount > 0, "!amount");
-        require(_account != address(0), "!address");
-        IERC20(token).transferFrom(msg.sender, address(this), _amount);
-        balances[_account] += _amount;
-        emit Deposit(_account, _amount);
+        require(_user != address(0), "!address");
+        // Account for tokens with fee transfer
+        uint256 _before = balance();
+        IERC20(token).safeTransferFrom(_from, address(this), _amount);
+        uint256 _after = balance();
+        require(_after > _before, "!token transfer");
+        uint256 _trasferred = _after - _before;
+        balances[_user] += _trasferred;
+        emit Deposit(_user, _trasferred);
     }
 
     function withdraw(uint256 _amount) external override nonReentrant notPaused {
-        require(_amount > 0, "!amount");
-        require(balances[msg.sender] >= _amount, "!balance");
-        balances[msg.sender] -= _amount;
-        IERC20(token).transfer(msg.sender, _amount);
-        emit Withdraw(msg.sender, _amount);
+        _withdraw(msg.sender, _amount);
     }
 
     function withdrawAll() external override nonReentrant notPaused {
         uint256 _amount = balances[msg.sender];
+       _withdraw(msg.sender, _amount);
+    }
+
+    function _withdraw(address _user, uint256 _amount) internal {
         require(_amount > 0, "!balance");
-        balances[msg.sender] = 0;
-        IERC20(token).transfer(msg.sender, _amount);
-        emit Withdraw(msg.sender, _amount);
+        balances[_user] = 0;
+        IERC20(token).safeTransfer(_user, _amount);
+        emit Withdraw(_user, _amount);
     }
 
     function rescue(address _toRescue, address _user, uint256 _amount) external onlyOperator {
         require(_toRescue != address(0) && _toRescue != token, "!token");
         require(_user != address(0) && _amount > 0, "!user !amount");
-        IERC20(_toRescue).transfer(_user, _amount);
+        IERC20(_toRescue).safeTransfer(_user, _amount);
     }
 
     function harvest() external override view onlyOperator {

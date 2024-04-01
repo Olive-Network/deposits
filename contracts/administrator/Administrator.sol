@@ -42,11 +42,10 @@ contract Administrator is IRole, IPausable, IBlackList, Initializable {
         bytes32[] calldata role,
         address[] calldata accounts
     ) external view override returns (bool[] memory) {
+        require(role.length == accounts.length, "!length");
         bool[] memory result = new bool[](accounts.length);
         for (uint256 i = 0; i < accounts.length; i++) {
-            for (uint256 j = 0; j < role.length; j++) {
-                result[i] = _roles[role[j]][accounts[i]];
-            }
+            result[i] = _roles[role[i]][accounts[i]];
         }
         return result;
     }
