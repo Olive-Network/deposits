@@ -9,6 +9,7 @@ import { IRole }  from "../administrator/IRole.sol";
 import { IPausable }  from "../administrator/IPausable.sol";
 import { IBlackList }  from "../administrator/IBlackList.sol";
 import { ReentrancyGuardUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract StrategyETH is IStrategyETH, ReentrancyGuardUpgradeable {
     /** Don't change the order of variables, always append */
@@ -17,6 +18,10 @@ contract StrategyETH is IStrategyETH, ReentrancyGuardUpgradeable {
 
     address public administrator;
     mapping(address => uint256) balances;
+
+    uint256[32] __gap; // reserve space for new variables to be added in future without changing the storage layout
+
+    using SafeERC20 for IERC20;
 
     function init(
         address _administrator
@@ -112,7 +117,7 @@ contract StrategyETH is IStrategyETH, ReentrancyGuardUpgradeable {
     function rescue(address _toRescue, address _user, uint256 _amount) external onlyOperator {
         require(_toRescue != address(0), "!address");
         require(_user != address(0) && _amount > 0, "!address");
-        IERC20(_toRescue).transfer(_user, _amount);
+        IERC20(_toRescue).safeTransfer(_user, _amount);
     }
 
     function harvest() external override view onlyOperator {
