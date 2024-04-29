@@ -20,7 +20,7 @@ contract Strategy is IStrategy, ReentrancyGuardUpgradeable {
     address public token;
     mapping(address => uint256) balances;
 
-    uint256[32] __gap; // reserve space for new variables to be added in future without changing the storage layout
+    uint256[27] __gap; // reserve space for new variables to be added in future without changing the storage layout
 
     using SafeERC20 for IERC20;
 
